@@ -14,7 +14,7 @@ if (! function_exists('currency')) {
      *
      * @return \Torann\Currency\Currency|string
      */
-    function currency($number = null, $currency = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
+    function currency($number = null, $currency = null, $toCurrency = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
     {
         if (is_null($number)) {
             return app('currency');
@@ -23,6 +23,7 @@ if (! function_exists('currency')) {
         return app('currency')->format(
             $number,
             $currency,
+            $toCurrency,
             $symbolStyle,
             $inverse,
             $roundingType,

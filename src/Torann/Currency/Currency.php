@@ -67,33 +67,44 @@ class Currency
      *
      * @return string
      */
-    public function format($number, $currency = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
+    public function format($number, $currency, $currencyTo, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
     {
         if (!$currency || !$this->hasCurrency($currency)) {
             $currency = $this->code;
         }
 
-        $symbolLeft = $this->getCurrencyProp($currency, 'symbol_left');
-        $symbolRight = $this->getCurrencyProp($currency, 'symbol_right');
+        if (!$currencyTo || !$this->hasCurrency($currencyTo)) {
+            $currencyTo = $this->code;
+        }
+
+        $symbolLeft = $this->getCurrencyProp($currencyTo, 'symbol_left');
+        $symbolRight = $this->getCurrencyProp($currencyTo, 'symbol_right');
 
         if (is_null($decimalPlace)) {
-            $decimalPlace = $this->getCurrencyProp($currency, 'decimal_place');
+            $decimalPlace = $this->getCurrencyProp($currencyTo, 'decimal_place');
         }
 
-        $decimalPoint = $this->getCurrencyProp($currency, 'decimal_point');
-        $thousandPoint = $this->getCurrencyProp($currency, 'thousand_point');
+        $decimalPoint = $this->getCurrencyProp($currencyTo, 'decimal_point');
+        $thousandPoint = $this->getCurrencyProp($currencyTo, 'thousand_point');
 
-        if ($value = $this->getCurrencyProp($currency, 'value')) {
-            if ($inverse) {
-                $value = $number * (1 / $value);
-            }
-            else {
-                $value = $number * $value;
-            }
-        }
-        else {
-            $value = $number;
-        }
+//        if ($value = $this->getCurrencyProp($currency, 'value')) {
+//            if ($inverse) {
+//                $value = $number * (1 / $value);
+//            }
+//            else {
+//                $value = $number * $value;
+//            }
+//        }
+//        else {
+//            $value = $number;
+//        }
+
+        // Convert to Base currency and then to the required one
+        $value = $number * (1 / $this->getCurrencyProp($currency, 'value'));
+        $value = $value * $this->getCurrencyProp($currencyTo, 'value');
+
+        // Add commission
+        $value = $value * $this->getConfig('commission');
 
         $string = '';
 

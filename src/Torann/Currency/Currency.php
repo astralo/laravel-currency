@@ -67,14 +67,11 @@ class Currency
      *
      * @return string
      */
-    public function format($number, $currency, $currencyTo, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
+    public function format($number, $currency, $currencyTo = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
     {
-        if (!$currency || !$this->hasCurrency($currency)) {
-            $currency = $this->code;
-        }
-
         if (!$currencyTo || !$this->hasCurrency($currencyTo)) {
-            $currencyTo = $this->code;
+//            $currencyTo = $this->code;
+            $currencyTo = session()->get('currency', $this->getConfig('default'));
         }
 
         $symbolLeft = $this->getCurrencyProp($currencyTo, 'symbol_left');
@@ -99,12 +96,16 @@ class Currency
 //            $value = $number;
 //        }
 
-        // Convert to Base currency and then to the required one
-        $value = $number * (1 / $this->getCurrencyProp($currency, 'value'));
-        $value = $value * $this->getCurrencyProp($currencyTo, 'value');
+        $value = $number;
 
-        // Add commission
-        $value = $value * $this->getConfig('commission');
+        // Convert to Base currency and then to the required one
+        if ($currencyTo !== $currency) {
+            $value = $value * (1 / $this->getCurrencyProp($currency, 'value'));
+            $value = $value * $this->getCurrencyProp($currencyTo, 'value');
+
+            // Add commission
+            $value = $value * $this->getConfig('commission');
+        }
 
         $string = '';
 

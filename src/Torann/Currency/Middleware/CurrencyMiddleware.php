@@ -60,8 +60,6 @@ class CurrencyMiddleware
     protected function setUserCurrency($currency, $request)
     {
         currency()->setCurrency($currency);
-
-        $request->getSession()->put(['currency' => $currency]);
-        $request->getSession()->reflash();
+        $request->getSession()->set('currency', $currency);
     }
 }

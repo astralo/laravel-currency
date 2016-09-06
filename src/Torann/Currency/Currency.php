@@ -54,6 +54,11 @@ class Currency
         $this->cache = $cache;
     }
 
+    public function f($number, $currency, $currencyTo = null, $withCommission = false, $withSymbol = false)
+    {
+        return $this->format($number, $currency, $currencyTo, ($withSymbol ? '%symbol%' : ''), false, '', null, null, $withCommission);
+    }
+
     /**
      * Format given number.
      *
@@ -67,7 +72,7 @@ class Currency
      *
      * @return string
      */
-    public function format($number, $currency, $currencyTo = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null)
+    public function format($number, $currency, $currencyTo = null, $symbolStyle = '%symbol%', $inverse = false, $roundingType = '', $precision = null, $decimalPlace = null, $withCommission = false)
     {
         if (!$currencyTo || !$this->hasCurrency($currencyTo)) {
 //            $currencyTo = $this->code;
@@ -84,18 +89,6 @@ class Currency
         $decimalPoint = $this->getCurrencyProp($currencyTo, 'decimal_point');
         $thousandPoint = $this->getCurrencyProp($currencyTo, 'thousand_point');
 
-//        if ($value = $this->getCurrencyProp($currency, 'value')) {
-//            if ($inverse) {
-//                $value = $number * (1 / $value);
-//            }
-//            else {
-//                $value = $number * $value;
-//            }
-//        }
-//        else {
-//            $value = $number;
-//        }
-
         $value = $number;
 
         // Convert to Base currency and then to the required one
@@ -104,7 +97,9 @@ class Currency
             $value = $value * $this->getCurrencyProp($currencyTo, 'value');
 
             // Add commission
-            $value = $value * $this->getConfig('commission');
+            if ($withCommission) {
+                $value = $value * $this->getConfig('commission');
+            }
         }
 
         $string = '';
@@ -300,14 +295,14 @@ class Currency
     protected function getCurrencyValues($currency)
     {
         if ($this->currencies_cache === null) {
-            if (config('app.debug', false) === true) {
-                $this->currencies_cache = $this->getDriver()->all();
-            }
-            else {
-                $this->currencies_cache = $this->cache->rememberForever('torann.currency', function () {
-                    return $this->getDriver()->all();
-                });
-            }
+//            if (config('app.debug', false) === true) {
+//                $this->currencies_cache = $this->getDriver()->all();
+//            }
+//            else {
+            $this->currencies_cache = $this->cache->rememberForever('torann.currency', function () {
+                return $this->getDriver()->all();
+            });
+//            }
         }
 
         return array_key_exists($currency, $this->currencies_cache)

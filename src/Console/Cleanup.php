@@ -1,11 +1,10 @@
 <?php
 
-namespace Torann\Currency\Commands;
+namespace Torann\Currency\Console;
 
-use Torann\Currency\Currency;
 use Illuminate\Console\Command;
 
-class CurrencyCleanupCommand extends Command
+class Cleanup extends Command
 {
     /**
      * The name and signature of the console command.
@@ -30,14 +29,22 @@ class CurrencyCleanupCommand extends Command
 
     /**
      * Create a new command instance.
-     *
-     * @param Currency $currency
      */
-    public function __construct(Currency $currency)
+    public function __construct()
     {
-        $this->currency = $currency;
+        $this->currency = app('currency');
 
         parent::__construct();
+    }
+
+    /**
+     * Execute the console command for Laravel 5.4 and below
+     *
+     * @return void
+     */
+    public function fire()
+    {
+        $this->handle();
     }
 
     /**
@@ -45,10 +52,14 @@ class CurrencyCleanupCommand extends Command
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
+        // Clear cache
         $this->currency->clearCache();
+        $this->comment('Currency cache cleaned.');
 
-        $this->info('Currency cache cleaned.');
+        // Force the system to rebuild cache
+        $this->currency->getCurrencies();
+        $this->comment('Currency cache rebuilt.');
     }
 }
